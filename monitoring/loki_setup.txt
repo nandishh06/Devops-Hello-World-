@@ -1,0 +1,21 @@
+Loki + Promtail quickstart
+
+1) Run Loki
+   docker run -d --name loki -p 3100:3100 grafana/loki:2.9.8
+
+2) Run Promtail (scrapes Docker logs)
+   # Save promtail config as monitoring/promtail-config.yml, then run:
+   docker run -d --name promtail \
+     -v /var/lib/docker/containers:/var/lib/docker/containers:ro \
+     -v $(pwd)/monitoring/promtail-config.yml:/etc/promtail/config.yml:ro \
+     -p 9080:9080 \
+     grafana/promtail:2.9.8 \
+     -config.file=/etc/promtail/config.yml
+
+3) Verify Loki is ready
+   curl -s "http://localhost:3100/ready"
+
+4) (Optional) Grafana
+   docker run -d --name grafana -p 3000:3000 grafana/grafana:10.4.2
+   # Add a new Loki data source at http://localhost:3100
+   # Explore logs with a basic query like: {job="docker-logs"}
