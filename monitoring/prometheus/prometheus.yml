@@ -1,0 +1,103 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'devops-monitor'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+    scheme: http
+
+  # Loki metrics
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+
+  # Promtail metrics
+  - job_name: 'promtail'
+    static_configs:
+      - targets: ['promtail:9080']
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+
+  # Grafana metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+
+  # Docker container metrics (if using cAdvisor)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+
+  # Node exporter metrics (if using node-exporter)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+
+  # Nomad metrics
+  - job_name: 'nomad'
+    static_configs:
+      - targets: ['nomad:4646']
+    metrics_path: /v1/metrics
+    scheme: http
+    scrape_interval: 15s
+
+  # Docker daemon metrics
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['docker-exporter:9323']
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+
+  # Flask application metrics
+  - job_name: 'hello-devops'
+    static_configs:
+      - targets: ['localhost:8080']
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+# Remote write configuration (optional)
+# remote_write:
+#   - url: "https://your-remote-storage/api/v1/write"
+#     basic_auth:
+#       username: ${REMOTE_WRITE_USERNAME}
+#       password: ${REMOTE_WRITE_PASSWORD}
+#     tls_config:
+#       insecure_skip_verify: false
+#       ca_file: /etc/prometheus/tls/ca.crt
+#       cert_file: /etc/prometheus/tls/client.crt
+#       key_file: /etc/prometheus/tls/client.key

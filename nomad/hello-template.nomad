@@ -1,3 +1,41 @@
+job "hello-devops" {
+  datacenters = ["dc1"]
+  type = "batch"
+
+  group "hello" {
+    count = 1
+
+    network {
+      port "http" {
+        static = 8080
+      }
+    }
+
+    task "hello-container" {
+      driver = "docker"
+
+      config {
+        image = "python:3.12-slim"
+        command = "python"
+        args = ["hello.py"]
+        
+        # Port mapping
+        ports = ["http"]
+        
+        # Logging configuration
+        logging {
+          type = "json-file"
+          config {
+            max-size = "10m"
+            max-file = "3"
+          }
+        }
+      }
+
+      # Template to copy hello.py into container
+      template {
+        destination = "local/hello.py"
+        data = <<EOH
 #!/usr/bin/env python3
 """
 DevOps Hello World Application
@@ -61,12 +99,10 @@ def hello():
 def health_check():
     """Health check endpoint"""
     try:
-        # Check system resources
         cpu_percent = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
         
-        # Determine health status
         status = 'healthy'
         if cpu_percent > 90:
             status = 'degraded'
@@ -80,28 +116,15 @@ def health_check():
             'timestamp': datetime.utcnow().isoformat(),
             'uptime': time.time() - APP_START_TIME,
             'checks': {
-                'cpu': {
-                    'status': 'pass' if cpu_percent < 90 else 'fail',
-                    'value': f"{cpu_percent}%",
-                    'threshold': '90%'
-                },
-                'memory': {
-                    'status': 'pass' if memory.percent < 90 else 'fail',
-                    'value': f"{memory.percent}%",
-                    'threshold': '90%'
-                },
-                'disk': {
-                    'status': 'pass' if disk.percent < 90 else 'fail',
-                    'value': f"{disk.percent}%",
-                    'threshold': '90%'
-                }
+                'cpu': {'status': 'pass' if cpu_percent < 90 else 'fail', 'value': f"{cpu_percent}%", 'threshold': '90%'},
+                'memory': {'status': 'pass' if memory.percent < 90 else 'fail', 'value': f"{memory.percent}%", 'threshold': '90%'},
+                'disk': {'status': 'pass' if disk.percent < 90 else 'fail', 'value': f"{disk.percent}%", 'threshold': '90%'}
             }
         }
         
         logger.info(f"Health check completed: {status}")
         REQUEST_COUNT.labels(method='GET', endpoint='/health', status='200').inc()
         
-        # Return appropriate HTTP status
         if status == 'healthy':
             return jsonify(health_data), 200
         else:
@@ -110,11 +133,7 @@ def health_check():
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         REQUEST_COUNT.labels(method='GET', endpoint='/health', status='500').inc()
-        return jsonify({
-            'status': 'unhealthy',
-            'error': str(e),
-            'timestamp': datetime.utcnow().isoformat()
-        }), 500
+        return jsonify({'status': 'unhealthy', 'error': str(e), 'timestamp': datetime.utcnow().isoformat()}), 500
 
 @app.route('/metrics')
 @REQUEST_DURATION.time()
@@ -187,3 +206,32 @@ if __name__ == '__main__':
 else:
     # Simple message for direct execution (backward compatibility)
     print("Hello, DevOps!")
+EOH
+      }
+
+      # Environment variables
+      env = {
+        APP_PORT = "8080"
+        APP_ENV = "production"
+        LOG_LEVEL = "info"
+      }
+      
+      # Resource constraints
+      resources {
+        cpu    = 100
+        memory = 128
+        network {
+          mbits = 10
+        }
+      }
+      
+      # Restart policy
+      restart {
+        attempts = 3
+        delay    = "10s"
+        interval = "30s"
+        mode     = "on-failure"
+      }
+    }
+  }
+}

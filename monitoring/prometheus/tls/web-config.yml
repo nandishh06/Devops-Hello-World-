@@ -1,0 +1,54 @@
+# Prometheus web configuration for TLS
+server:
+  # HTTPS configuration
+  http_server_config:
+    # HTTP/2 support
+    http2: true
+    
+    # TLS configuration
+    tls_config:
+      # Certificate file
+      cert_file: /etc/prometheus/tls/server.crt
+      # Private key file
+      key_file: /etc/prometheus/tls/server.key
+      # CA certificate for client authentication (optional)
+      # client_ca_file: /etc/prometheus/tls/ca.crt
+      # Require client authentication
+      # client_auth_type: RequireAndVerifyClientCert
+      
+      # Minimum TLS version
+      min_version: TLS12
+      # Maximum TLS version
+      max_version: TLS13
+      
+      # Cipher suites (optional)
+      # cipher_suites:
+      #   - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+      #   - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+      #   - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+      
+      # Curve preferences (optional)
+      # curve_preferences:
+      #   - CurveP521
+      #   - CurveP384
+      #   - CurveP256
+      
+      # Skip TLS certificate verification (for testing only)
+      insecure_skip_verify: false
+
+# Basic authentication (optional)
+basic_auth_users:
+  # Generate with: htpasswd -nBC 10 "" | tr -d ':'
+  # Example: admin:$2y$10$kLjQZ.7l1C6.8.9.0.1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0.1.2
+  # ${PROMETHEUS_USERNAME}:${PROMETHEUS_PASSWORD_HASH}
+
+# OAuth2 configuration (optional)
+# oauth2:
+#   client_id: ${OAUTH2_CLIENT_ID}
+#   client_secret: ${OAUTH2_CLIENT_SECRET}
+#   token_url: ${OAUTH2_TOKEN_URL}
+#   # Optional: additional scopes
+#   scopes:
+#     - openid
+#     - profile
+#     - email

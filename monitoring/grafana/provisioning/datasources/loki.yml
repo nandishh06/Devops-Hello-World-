@@ -1,0 +1,34 @@
+apiVersion: 1
+
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: ${LOKI_URL:-http://loki:3100}
+    database: ${LOKI_DATABASE:-}
+    user: ${LOKI_USERNAME:-}
+    password: ${LOKI_PASSWORD:-}
+    basicAuth: true
+    basicAuthUser: ${LOKI_USERNAME:-}
+    jsonData:
+      maxLines: 1000
+    secureJsonData:
+      basicAuthPassword: ${LOKI_PASSWORD:-}
+    isDefault: false
+    editable: true
+
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: ${PROMETHEUS_URL:-http://prometheus:9090}
+    database: ${PROMETHEUS_DATABASE:-}
+    user: ${PROMETHEUS_USERNAME:-}
+    password: ${PROMETHEUS_PASSWORD:-}
+    basicAuth: false
+    jsonData:
+      timeInterval: 5s
+      queryTimeout: 60s
+      httpMethod: POST
+    secureJsonData: {}
+    isDefault: true
+    editable: true

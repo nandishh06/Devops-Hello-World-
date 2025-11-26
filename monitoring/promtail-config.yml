@@ -1,18 +1,44 @@
 server:
-  http_listen_port: 9080
-  grpc_listen_port: 0
+  http_listen_port: ${PROMTAIL_HTTP_PORT:-9080}
+  grpc_listen_port: ${PROMTAIL_GRPC_PORT:-0}
 
 positions:
   filename: /tmp/positions.yaml
 
 clients:
-  - url: http://localhost:3100/loki/api/v1/push
+  - url: ${LOKI_URL:-http://localhost:3100}/loki/api/v1/push
+    basic_auth:
+      username: ${LOKI_USERNAME:-}
+      password: ${LOKI_PASSWORD:-}
+    tenant_id: ${LOKI_TENANT_ID:-}
 
 scrape_configs:
   - job_name: docker-logs
     static_configs:
       - targets:
-          - localhost
+          - ${PROMTAIL_TARGET:-localhost}
         labels:
           job: docker-logs
-          __path__: /var/lib/docker/containers/*/*-json.log
+          __path__: ${DOCKER_LOG_PATH:-/var/lib/docker/containers/*/*-json.log}
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '(.+)'
+        target_label: 'container'
+        replacement: '$1'
+      - source_labels: ['__meta_docker_container_log_stream']
+        regex: '(.+)'
+        target_label: 'stream'
+        replacement: '$1'
+
+# Optional: TLS configuration for secure communication
+# Uncomment and configure if using HTTPS
+# clients:
+#   - url: https://loki.example.com/loki/api/v1/push
+#     basic_auth:
+#       username: ${LOKI_USERNAME}
+#       password: ${LOKI_PASSWORD}
+#     tls_config:
+#       ca_file: /path/to/ca.crt
+#       cert_file: /path/to/client.crt
+#       key_file: /path/to/client.key
+#       insecure_skip_verify: false

@@ -1,0 +1,8 @@
+==> No configuration files loaded
+==> Starting Nomad agent...
+==> Error starting agent: server setup failed: Failed to start RPC layer: listen tcp 0.0.0.0:4647: bind: address already in use
+    2025-11-25T23:40:20.810+0530 [DEBUG] nomad: issuer not set; OIDC Discovery endpoint for workload identities disabled
+    2025-11-25T23:40:20.814+0530 [ERROR] nomad: failed to initialize TLS listener: error="listen tcp 0.0.0.0:4647: bind: address already in use"
+    2025-11-25T23:40:20.814+0530 [INFO]  nomad: shutting down server
+    2025-11-25T23:40:20.814+0530 [ERROR] nomad: failed to start RPC layer: error="listen tcp 0.0.0.0:4647: bind: address already in use"
+    2025-11-25T23:40:20.814+0530 [ERROR] agent: error starting agent: error="server setup failed: Failed to start RPC layer: listen tcp 0.0.0.0:4647: bind: address already in use"
