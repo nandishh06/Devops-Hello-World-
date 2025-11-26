@@ -12,6 +12,7 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 import psutil
+from typing import Dict, Any
 
 # Configure logging
 logging.basicConfig(
@@ -39,7 +40,7 @@ def hello():
     start_time = time.time()
     try:
         message = os.getenv('HELLO_MESSAGE', 'Hello, DevOps!')
-        response = {
+        response: Dict[str, Any] = {
             'message': message,
             'timestamp': datetime.utcnow().isoformat(),
             'version': '1.0.0',
@@ -75,7 +76,7 @@ def health_check():
         if disk.percent > 90:
             status = 'degraded'
         
-        health_data = {
+        health_data: Dict[str, Any] = {
             'status': status,
             'timestamp': datetime.utcnow().isoformat(),
             'uptime': time.time() - APP_START_TIME,
